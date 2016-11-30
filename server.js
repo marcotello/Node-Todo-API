@@ -60,7 +60,7 @@ app.get('/todos/:id', function (req, res) {
 	var todoID = parseInt(req.params.id, 10);
 	//var todoIndex = 0;
 
-	var matchedTodo;
+	// var matchedTodo;
 
 	//console.log(typeof todoID);
 	//for(idx = 0; idx < todos.length; idx++){
@@ -81,19 +81,20 @@ app.get('/todos/:id', function (req, res) {
 	// 	if(todo.id === parseInt(todoID, 10)){
 	// 		matchedTodo = todo;
 	// 	}
-	// }); 
+	// });
 
 	//*********************************
 	//Using underscore library to match the todo by ID
-	matchedTodo = _.findWhere(todos, {id: todoID});
-
-	if(matchedTodo){
-		res.json(matchedTodo);
-	}else{
-		res.status(404).send();
-	}
-
-
+	//matchedTodo = _.findWhere(todos, {id: todoID});
+	db.todo.findById(todoID).then( function (matchedTodo) {
+		if(matchedTodo){
+			res.json(matchedTodo);
+		}else{
+			res.status(404).send();
+		}
+	}).catch( funtion (e) {
+		res.status(500).send('Something went wrong');
+	});
 	//res.json(todos[todoIndex]);
 	//res.send('ID = ' + req.params.id);
 });
@@ -138,7 +139,7 @@ app.post('/todos', function (req, res) {
 	}).catch( function (e) {
 		res.status(404).json(e);
 	});
-	
+
 });
 
 app.delete('/todos/:id', function (req, res) {
@@ -147,7 +148,7 @@ app.delete('/todos/:id', function (req, res) {
 	var matchedTodo = _.findWhere(todos, {id: todoID});
 
 	if(matchedTodo){
-		todos = _.without(todos, matchedTodo); 
+		todos = _.without(todos, matchedTodo);
 		res.json(matchedTodo);
 	}else{
 		res.status(404).send({"error":"no todo found with that id"});
@@ -175,7 +176,7 @@ app.put('/todos/:id', function (req, res) {
 	if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0){
 		validAttributes.description = body.description;
 	}else if(body.hasOwnProperty('description')){
-		return res.status(400).send();	
+		return res.status(400).send();
 	}
 
 	//Everithing is fine
