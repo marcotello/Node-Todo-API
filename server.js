@@ -35,25 +35,45 @@ app.get('/', function (req, res) {
 
 app.get('/todos', function (req, res) {
 	var queryParams = req.query;
-	var filterTodos = todos;
+	// var filterTodos = todos;
+	//
+	// if(queryParams.completed && queryParams.completed === 'true'){
+	// 	filterTodos = _.where(todos, {completed: true});
+	// }else if(queryParams.completed && queryParams.completed === 'false'){
+	// 	filterTodos = _.where(todos, {completed: false});
+	// }
+	//
+	// if(queryParams.description){
+	// 	filterTodos = _.filter(filterTodos, function (todo) {
+	// 		if(todo.description.toLowerCase().indexOf(queryParams.description.toLowerCase())>-1){
+	// 			return true;
+	// 		}else{
+	// 			return false;
+	// 		}
+	// 	});
+	// }
 
-	if(queryParams.completed && queryParams.completed === 'true'){
-		filterTodos = _.where(todos, {completed: true});
-	}else if(queryParams.completed && queryParams.completed === 'false'){
-		filterTodos = _.where(todos, {completed: false});
+	var where = {completed: false};
+
+  if(queryParams.completed && queryParams.completed === 'true'){
+		where.completed = true;
 	}
 
 	if(queryParams.description){
-		filterTodos = _.filter(filterTodos, function (todo) {
-			if(todo.description.toLowerCase().indexOf(queryParams.description.toLowerCase())>-1){
-				return true;
-			}else{
-				return false;
-			}
-		});
+		where.description = {
+		  $like: '%' + queryParams.description + '%'
+	  }
 	}
 
-	res.json(filterTodos);
+	db.todo.findAll({ where: where }).then( function (todos) {
+		if(!!todos){
+			res.json(todos);
+		}else{
+			res.status(404).send();
+		}
+	}).catch( function (e) {
+		res.status(500).send('Something went wrong');
+	});
 });
 
 app.get('/todos/:id', function (req, res) {
@@ -92,7 +112,7 @@ app.get('/todos/:id', function (req, res) {
 		}else{
 			res.status(404).send();
 		}
-	}).catch( funtion (e) {
+	}).catch( function (e) {
 		res.status(500).send('Something went wrong');
 	});
 	//res.json(todos[todoIndex]);
