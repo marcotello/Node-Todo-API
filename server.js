@@ -53,10 +53,12 @@ app.get('/todos', function (req, res) {
 	// 	});
 	// }
 
-	var where = {completed: false};
+	var where = {};
 
-  if(queryParams.completed && queryParams.completed === 'true'){
+  	if(queryParams.completed && queryParams.completed === 'true'){
 		where.completed = true;
+	}else if(queryParams.completed && queryParams.completed === 'false'){
+		where.completed = false;
 	}
 
 	if(queryParams.description){
