@@ -165,16 +165,40 @@ app.post('/todos', function (req, res) {
 });
 
 app.delete('/todos/:id', function (req, res) {
-	var todoID = parseInt(req.params.id, 10);
+	var todoID = parseInt(req.params.id, 10); 
+	
+	var where = {
+		id: todoID
+	}; 
 
-	var matchedTodo = _.findWhere(todos, {id: todoID});
+	var fetchedTodo;
 
-	if(matchedTodo){
-		todos = _.without(todos, matchedTodo);
-		res.json(matchedTodo);
-	}else{
-		res.status(404).send({"error":"no todo found with that id"});
-	}
+	// var matchedTodo = _.findWhere(todos, {id: todoID});
+
+	// if(matchedTodo){
+	// 	todos = _.without(todos, matchedTodo);
+	// 	res.json(matchedTodo);
+	// }else{
+	// 	res.status(404).send({"error":"no todo found with that id"});
+	// }
+
+	// Fetching the todo
+	db.todo.findById(todoID).then( function (matchedTodo) {
+		if(matchedTodo){
+			// Deleting the todo
+			db.todo.destroy({where: where}).then( function (rowsDeleted) {
+				if(rowsDeleted===1){
+					res.json(matchedTodo);
+				}
+			}).catch( function (e) {
+				res.status(500).send('Something went wrong');
+			});
+		}else{
+			res.status(404).send();
+		}
+	}).catch( function (e) {
+		res.status(500).send('Something went wrong');
+	});
 });
 
 app.put('/todos/:id', function (req, res) {
