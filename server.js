@@ -240,14 +240,14 @@ app.post('/users', function (req, res) {
 
 	db.user.create(body).then(function (user){
 		console.log('User Created');
-		res.json(user.toJSON());
+		res.json(user.toPublicJSON());
 	}).catch( function (e) {
 		res.status(404).json(e);
 	});
 
 });
 
-db.sequelize.sync().then( function () {
+db.sequelize.sync({force: true}).then( function () {
 	app.listen(PORT, function () {
 		console.log('Express listening on port ' + PORT + '!');
 	});
