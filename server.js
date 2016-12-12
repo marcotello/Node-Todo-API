@@ -159,7 +159,15 @@ app.post('/todos', middleware.requineAuthentication, function (req, res) {
 
 	db.todo.create(body).then(function (todo){
 		console.log('Finished');
-		res.json(todo.toJSON());
+		//res.json(todo.toJSON());
+
+		//searching the user associated to this todo
+		req.user.addTodo(todo).then( function () {
+			return todo.reload();
+		}).then( function () {
+			res.json(todo.toJSON());
+		});
+
 	}).catch( function (e) {
 		res.status(404).json(e);
 	});
@@ -167,11 +175,11 @@ app.post('/todos', middleware.requineAuthentication, function (req, res) {
 });
 
 app.delete('/todos/:id', middleware.requineAuthentication, function (req, res) {
-	var todoID = parseInt(req.params.id, 10); 
-	
+	var todoID = parseInt(req.params.id, 10);
+
 	var where = {
 		id: todoID
-	}; 
+	};
 
 	var fetchedTodo;
 
@@ -251,15 +259,15 @@ app.post('/users', function (req, res) {
 
 app.post('/users/login', function (req, res) {
 	var body = _.pick(req.body, 'email', 'password');
-	
+
 	db.user.authenticate(body).then( function (user) {
 		var token = user.generateToken('autentication');
 		if(token){
-			res.header('Auth', token).json(user.toPublicJSON());	
+			res.header('Auth', token).json(user.toPublicJSON());
 		}else{
 			res.status(401).send();
 		}
-		
+
 	}, function (e) {
 		res.status(401).send();
 	});
