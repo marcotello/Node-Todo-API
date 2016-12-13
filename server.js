@@ -55,7 +55,9 @@ app.get('/todos', middleware.requineAuthentication, function (req, res) {
 	// 	});
 	// }
 
-	var where = {};
+	var where = {
+		userId: req.user.id
+	};
 
   	if(queryParams.completed && queryParams.completed === 'true'){
 		where.completed = true;
@@ -69,6 +71,8 @@ app.get('/todos', middleware.requineAuthentication, function (req, res) {
 	  }
 	}
 
+
+
 	db.todo.findAll({ where: where }).then( function (todos) {
 		if(!!todos){
 			res.json(todos);
@@ -76,12 +80,18 @@ app.get('/todos', middleware.requineAuthentication, function (req, res) {
 			res.status(404).send();
 		}
 	}).catch( function (e) {
+		console.log(e);
 		res.status(500).send('Something went wrong');
 	});
 });
 
 app.get('/todos/:id', middleware.requineAuthentication, function (req, res) {
 	var todoID = parseInt(req.params.id, 10);
+	var userID = req.user.id;
+	var where = {
+		id: todoID,
+		userId: userID
+	};
 	//var todoIndex = 0;
 
 	// var matchedTodo;
@@ -110,7 +120,7 @@ app.get('/todos/:id', middleware.requineAuthentication, function (req, res) {
 	//*********************************
 	//Using underscore library to match the todo by ID
 	//matchedTodo = _.findWhere(todos, {id: todoID});
-	db.todo.findById(todoID).then( function (matchedTodo) {
+	db.todo.findOne({ where: where }).then( function (matchedTodo) {
 		if(matchedTodo){
 			res.json(matchedTodo);
 		}else{
@@ -176,9 +186,11 @@ app.post('/todos', middleware.requineAuthentication, function (req, res) {
 
 app.delete('/todos/:id', middleware.requineAuthentication, function (req, res) {
 	var todoID = parseInt(req.params.id, 10);
+	var userID = req.user.id;
 
 	var where = {
-		id: todoID
+		id: todoID,
+		userId: userID
 	};
 
 	var fetchedTodo;
@@ -193,7 +205,7 @@ app.delete('/todos/:id', middleware.requineAuthentication, function (req, res) {
 	// }
 
 	// Fetching the todo
-	db.todo.findById(todoID).then( function (matchedTodo) {
+	db.todo.findOne({ where: where }).then( function (matchedTodo) {
 		if(matchedTodo){
 			// Deleting the todo
 			db.todo.destroy({where: where}).then( function (rowsDeleted) {
@@ -213,6 +225,14 @@ app.delete('/todos/:id', middleware.requineAuthentication, function (req, res) {
 
 app.put('/todos/:id', middleware.requineAuthentication, function (req, res) {
 	var todoID = parseInt(req.params.id, 10);
+	var userID = req.user.id;
+
+	var where = {
+		id: todoID,
+		userId: userID
+	};
+
+
 	var body = _.pick(req.body, 'description', 'completed');
 
 	var attributes = {};
@@ -225,7 +245,7 @@ app.put('/todos/:id', middleware.requineAuthentication, function (req, res) {
 		attributes.description = body.description;
 	}
 
-	db.todo.findById(todoID).then( function (todo) {
+	db.todo.findOne({ where: where }).then( function (todo) {
 		if(todo){
 			return todo.update(attributes).then( function (todo) {
 				res.json(todo.toJSON());
