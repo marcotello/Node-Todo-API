@@ -303,7 +303,7 @@ app.post('/users/login', function (req, res) {
 });
 
 app.delete('/users/login', middleware.requineAuthentication, function (req, res) {
-	db.token.destroy().then( function () {
+	req.token.destroy().then( function () {
 		res.status(204).send();
 	}).catch( function (e) {
 		res.status(500).send();

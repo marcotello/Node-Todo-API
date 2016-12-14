@@ -8,17 +8,17 @@ module.exports = function (db) {
 
 			db.token.findOne({
 				where: {
-					tokenHash: cryptojs.MD5(token).toString();
+					tokenHash: cryptojs.MD5(token).toString()
 				}
 			}).then( function (tokenInstance) {
 				if(!tokenInstance){
-					thow new Error();
+					throw new Error();
 				}
 
 				req.token = tokenInstance;
 				return db.user.findByToken(token);
 
-			})then( function (user) {
+			}).then( function (user) {
 				req.user = user;
 				next();
 			}).catch( function () {
